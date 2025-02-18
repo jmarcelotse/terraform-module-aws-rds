@@ -9,6 +9,12 @@ variable "instance_use_identifier_prefix" {
   default     = false
 }
 
+variable "use_identifier_prefix" {
+  description = "Determina se deve usar um prefixo no identificador da instância"
+  type        = bool
+  default     = false
+}
+
 variable "custom_iam_instance_profile" {
   description = "RDS custom iam instance profile"
   type        = string

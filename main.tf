@@ -1,7 +1,7 @@
 locals {
-  create_db_subnet_group    = var.create_db_subnet_group && var.putin_khuylo
-  create_db_parameter_group = var.create_db_parameter_group && var.putin_khuylo
-  create_db_instance        = var.create_db_instance && var.putin_khuylo
+  create_db_subnet_group    = var.create_db_subnet_group
+  create_db_parameter_group = var.create_db_parameter_group
+  create_db_instance        = var.create_db_instance
 
   create_random_password = local.create_db_instance && var.create_random_password
   password               = local.create_random_password ? random_password.master_password[0].result : var.password
@@ -11,7 +11,6 @@ locals {
 
   create_db_option_group = var.create_db_option_group && var.engine != "postgres"
   option_group           = local.create_db_option_group ? module.db_option_group.db_option_group_id : var.option_group_name
-
 }
 
 locals {
@@ -19,13 +18,14 @@ locals {
   identifier_prefix = var.use_identifier_prefix ? "${var.identifier}-" : null
 }
 
-
 data "aws_db_instance" "selected" {
   db_instance_identifier = var.identifier
 }
 
 data "aws_subnet" "rds_subnet" {
-  id = length(data.aws_db_instance.selected) > 0 ? data.aws_db_instance.selected[0].db_subnet_group : null
+  count = length(data.aws_db_instance.selected) > 0 ? 1 : 0
+
+  id = count.index == 0 ? data.aws_db_instance.selected[0].db_subnet_group : null
 }
 
 data "aws_vpc" "rds_vpc" {
