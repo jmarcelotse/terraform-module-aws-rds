@@ -1,7 +1,7 @@
 locals {
-  create_db_subnet_group    = var.create_db_subnet_group
-  create_db_parameter_group = var.create_db_parameter_group
-  create_db_instance        = var.create_db_instance
+  create_db_subnet_group    = var.create_db_subnet_group && var.putin_khuylo
+  create_db_parameter_group = var.create_db_parameter_group && var.putin_khuylo
+  create_db_instance        = var.create_db_instance && var.putin_khuylo
 
   create_random_password = local.create_db_instance && var.create_random_password
   password               = local.create_random_password ? random_password.master_password[0].result : var.password
@@ -11,44 +11,6 @@ locals {
 
   create_db_option_group = var.create_db_option_group && var.engine != "postgres"
   option_group           = local.create_db_option_group ? module.db_option_group.db_option_group_id : var.option_group_name
-}
-
-locals {
-  identifier        = var.use_identifier_prefix ? null : var.identifier
-  identifier_prefix = var.use_identifier_prefix ? "${var.identifier}-" : null
-}
-
-data "aws_db_instance" "selected" {
-  db_instance_identifier = var.identifier
-}
-
-data "aws_subnet" "rds_subnet" {
-  count = length(data.aws_db_instance.selected) > 0 ? 1 : 0
-
-  id = count.index == 0 ? data.aws_db_instance.selected[0].db_subnet_group : null
-}
-
-data "aws_vpc" "rds_vpc" {
-  id = data.aws_subnet.rds_subnet.vpc_id
-}
-
-data "aws_security_group" "rds_sg" {
-  for_each = toset(data.aws_db_instance.selected.vpc_security_groups)
-  id = each.value
-}
-
-variable "vpc_id" {
-  default = null
-}
-
-variable "security_group_ids" {
-  type    = list(string)
-  default = []
-}
-
-locals {
-  vpc_id             = var.vpc_id != null ? var.vpc_id : data.aws_vpc.rds_vpc.id
-  security_group_ids = length(var.security_group_ids) > 0 ? var.security_group_ids : [for sg in data.aws_security_group.rds_sg : sg.id]
 }
 
 resource "random_password" "master_password" {
@@ -107,24 +69,21 @@ module "db_option_group" {
 module "db_instance" {
   source = "./modules/db_instance"
 
-  create                   = local.create_db_instance
-  identifier               = var.identifier
-  use_identifier_prefix    = var.use_identifier_prefix
+  create                = local.create_db_instance
+  identifier            = var.identifier
+  use_identifier_prefix = var.instance_use_identifier_prefix
 
-  db_instance_identifier   = var.identifier
-  db_allocated_storage     = var.allocated_storage
-  db_instance_class        = var.instance_class
-  db_username              = var.username
-  db_engine                = var.engine
-
-  engine                   = var.engine
-  engine_version           = var.engine_version
-  storage_type             = var.storage_type
-  storage_encrypted        = var.storage_encrypted
-  kms_key_id               = var.kms_key_id
-  license_model            = var.license_model
+  engine            = var.engine
+  engine_version    = var.engine_version
+  instance_class    = var.instance_class
+  allocated_storage = var.allocated_storage
+  storage_type      = var.storage_type
+  storage_encrypted = var.storage_encrypted
+  kms_key_id        = var.kms_key_id
+  license_model     = var.license_model
 
   db_name                             = var.db_name
+  username                            = var.username
   password                            = local.password
   port                                = var.port
   domain                              = var.domain
@@ -132,7 +91,7 @@ module "db_instance" {
   iam_database_authentication_enabled = var.iam_database_authentication_enabled
   custom_iam_instance_profile         = var.custom_iam_instance_profile
 
-  vpc_security_group_ids = local.security_group_ids
+  vpc_security_group_ids = var.vpc_security_group_ids
   db_subnet_group_name   = local.db_subnet_group_name
   parameter_group_name   = local.parameter_group_name_id
   option_group_name      = var.engine != "postgres" ? local.option_group : null
@@ -149,6 +108,7 @@ module "db_instance" {
   auto_minor_version_upgrade  = var.auto_minor_version_upgrade
   apply_immediately           = var.apply_immediately
   maintenance_window          = var.maintenance_window
+  blue_green_update           = var.blue_green_update
 
   snapshot_identifier              = var.snapshot_identifier
   copy_tags_to_snapshot            = var.copy_tags_to_snapshot

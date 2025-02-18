@@ -402,35 +402,3 @@ variable "cloudwatch_log_group_kms_key_id" {
   type        = string
   default     = null
 }
-
-#
-variable "db_instance_identifier" {
-  description = "Nome da instância do RDS"
-  type        = string
-}
-
-variable "db_engine" {
-  description = "Tipo do banco de dados (ex: postgres, mysql)"
-  type        = string
-}
-
-variable "db_instance_class" {
-  description = "Tamanho da instância do banco de dados"
-  type        = string
-}
-
-variable "db_allocated_storage" {
-  description = "Tamanho do armazenamento do banco de dados"
-  type        = number
-}
-
-variable "db_username" {
-  description = "Nome de usuário do banco"
-  type        = string
-}
-
-variable "use_identifier_prefix" {
-  description = "Determina se deve usar um prefixo no identificador da instância"
-  type        = bool
-  default     = false
-}

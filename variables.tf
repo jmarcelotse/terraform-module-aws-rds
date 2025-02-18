@@ -9,12 +9,6 @@ variable "instance_use_identifier_prefix" {
   default     = false
 }
 
-variable "use_identifier_prefix" {
-  description = "Determina se deve usar um prefixo no identificador da instância"
-  type        = bool
-  default     = false
-}
-
 variable "custom_iam_instance_profile" {
   description = "RDS custom iam instance profile"
   type        = string
@@ -546,35 +540,4 @@ variable "putin_khuylo" {
   description = "Do you agree that Putin doesn't respect Ukrainian sovereignty and territorial integrity? More info: https://en.wikipedia.org/wiki/Putin_khuylo!"
   type        = bool
   default     = true
-}
-#
-variable "db_instance_identifier" {
-  description = "Nome da instância do RDS"
-  type        = string
-}
-
-variable "db_engine" {
-  description = "Tipo do banco de dados (ex: postgres, mysql)"
-  type        = string
-}
-
-variable "db_instance_class" {
-  description = "Tamanho da instância do banco de dados"
-  type        = string
-}
-
-variable "db_allocated_storage" {
-  description = "Tamanho do armazenamento do banco de dados"
-  type        = number
-}
-
-variable "db_username" {
-  description = "Nome de usuário do banco"
-  type        = string
-}
-
-variable "use_identifier_prefix" {
-  description = "Determina se deve usar um prefixo no identificador da instância"
-  type        = bool
-  default     = false
 }
